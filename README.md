@@ -1,5 +1,11 @@
 # mqtt-scenario-sim
 
+[![CI](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml/badge.svg)](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/mqtt-scenario-sim)](https://www.npmjs.com/package/mqtt-scenario-sim)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node >=22](https://img.shields.io/badge/node-%3E%3D22-green)](package.json)
+[![codecov](https://codecov.io/gh/dislev/mqtt-scenario-sim/branch/main/graph/badge.svg)](https://codecov.io/gh/dislev/mqtt-scenario-sim)
+
 A configurable MQTT sensor simulator with built-in test scenarios. Publish synthetic sensor data over MQTT — as JSON or protobuf — without real hardware.
 
 Define your sources with any labels you want. Wire up any MQTT topic template. Switch between test scenarios over HTTP to drive your alert and pipeline logic.
