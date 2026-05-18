@@ -1,5 +1,5 @@
 export { startSimulator } from './simulator';
-export type { Simulator, StateSnapshot, MetricSnapshot } from './simulator';
+export type { Simulator, StateSnapshot, MetricSnapshot, PublishEvent } from './simulator';
 export { buildEncoder, jsonEncoder } from './encoder';
 export type { EncodeFunction, EncodingConfig, Reading } from './encoder';
 export { loadConfig } from './config';

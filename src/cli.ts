@@ -5,7 +5,7 @@ import * as path from 'path';
 import express from 'express';
 import { loadConfig } from './config';
 import { buildEncoder, jsonEncoder } from './encoder';
-import { startSimulator, StateSnapshot } from './simulator';
+import { startSimulator, StateSnapshot, PublishEvent } from './simulator';
 import { ScenarioId, SCENARIO_KEYS, SCENARIO_LABELS, SCENARIO_DETAIL } from './scenarios';
 import { logger } from './logger';
 
@@ -116,6 +116,19 @@ async function main(): Promise<void> {
 
   app.get('/effects', (_req, res) => {
     res.json(sim.getEffectStates());
+  });
+
+  app.get('/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const unsub = sim.onPublish((event: PublishEvent) => {
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    });
+
+    req.on('close', unsub);
   });
 
   app.get('/status', (_req, res) => {

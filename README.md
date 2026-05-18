@@ -139,6 +139,7 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 
 | Method | Path | Description |
 |---|---|---|
+| `GET` | `/stream` | SSE stream — one event per metric publish (`curl -N http://localhost:4000/stream`) |
 | `GET` | `/status` | Full snapshot: uptime, scenario, all readings, all effects |
 | `GET` | `/health` | Status, uptime, scenario |
 | `GET` | `/scenario` | Current scenario name + description |

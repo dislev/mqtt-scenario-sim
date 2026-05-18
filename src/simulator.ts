@@ -19,12 +19,23 @@ export interface StateSnapshot {
   metrics: MetricSnapshot[];
 }
 
+export interface PublishEvent {
+  labels: Record<string, string>;
+  topic: string;
+  metric: string;
+  units: string;
+  value: number;
+  scenario: ScenarioId;
+  timestamp: number;
+}
+
 export interface Simulator {
   stop(): void;
   setScenario(id: ScenarioId, sourceKey?: string, durationSeconds?: number): void;
   getScenario(sourceKey?: string): ScenarioId;
   getState(): StateSnapshot;
   getEffectStates(): Record<string, EffectState>;
+  onPublish(listener: (event: PublishEvent) => void): () => void;
 }
 
 interface ScenarioControl {
@@ -48,6 +59,7 @@ export function startSimulator(
 ): Simulator {
   const timers: ReturnType<typeof setInterval>[] = [];
   const revertTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const publishListeners = new Set<(event: PublishEvent) => void>();
 
   const entries = new Map<string, SourceEntry>();
 
@@ -102,7 +114,7 @@ export function startSimulator(
       const intervalMs = state.config.intervalMs;
 
       const timer = setInterval(
-        () => publishMetric(entry, i, metricCfg, state, client, encode),
+        () => publishMetric(entry, i, metricCfg, state, client, encode, publishListeners),
         intervalMs,
       );
       timers.push(timer);
@@ -186,6 +198,11 @@ export function startSimulator(
       }
       return out;
     },
+
+    onPublish(listener: (event: PublishEvent) => void): () => void {
+      publishListeners.add(listener);
+      return () => publishListeners.delete(listener);
+    },
   };
 }
 
@@ -196,6 +213,7 @@ async function publishMetric(
   state: SensorState,
   client: mqtt.MqttClient,
   encode: EncodeFunction,
+  listeners: Set<(event: PublishEvent) => void>,
 ): Promise<void> {
   const span       = state.resolved.max - state.resolved.min;
   const targetBias = computeBias(entry.effectConfigs, entry.effectState, metricCfg.name, span);
@@ -229,6 +247,19 @@ async function publishMetric(
     });
 
     await client.publishAsync(entry.topic, buf, { qos: 0 });
+
+    if (listeners.size > 0) {
+      const event: PublishEvent = {
+        labels:    entry.config.labels,
+        topic:     entry.topic,
+        metric:    metricCfg.name,
+        units:     metricCfg.units,
+        value,
+        scenario:  sc.active,
+        timestamp: state.lastPublishedAt!,
+      };
+      for (const fn of listeners) fn(event);
+    }
 
     const scenarioTag = sc.active !== 'normal' ? ` [${sc.active}]` : '';
     const biasTag     = state.currentBias !== 0
