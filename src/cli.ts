@@ -16,6 +16,51 @@ const logLevelArg = process.argv.find((a) => a.startsWith('--log-level='))?.slic
   ?? process.env['LOG_LEVEL'];
 if (logLevelArg) logger.setLevel(logLevelArg);
 
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+Usage: mqtt-scenario-sim [options]
+
+Options:
+  --config <path>       Path to YAML config file (default: examples/minimal.yaml)
+  --log-level <level>   Log verbosity: silent | error | warn | info | debug  (default: info)
+  -h, --help            Show this help message
+
+Env vars:
+  MQTT_HOST             MQTT broker host            (default: localhost)
+  MQTT_PORT             MQTT broker port            (default: 1883)
+  PUBLISH_INTERVAL_MS   Publish interval in ms      (default: 5000)
+  ENCODING              json | protobuf             (default: json)
+  PROTO_FILE            Path to .proto file
+  PROTO_MESSAGE_TYPE    Fully-qualified message type
+  PROTO_FIELD_MAP       JSON string field map
+  CONFIG_PATH           Path to YAML config file    (default: examples/minimal.yaml)
+  PORT                  HTTP control plane port     (default: 4000)
+  LOG_LEVEL             Log verbosity level         (default: info)
+
+HTTP API (default port 4000):
+  GET  /stream          SSE stream of live metric publishes
+  GET  /status          Full snapshot: uptime, scenario, readings, effects
+  GET  /health          Status, uptime, source/metric counts, scenario
+  GET  /scenario        Current scenario name + description
+  POST /scenario/:id    Activate scenario by ID (0–5) or name
+  GET  /state           Last published value per metric
+  GET  /effects         Current effect state per source
+
+Scenarios:
+  0 / normal              Each metric runs its configured mode
+  1 / out_of_range        All metrics 30% above max
+  2 / trending_to_breach  Rising toward max
+  3 / stable_healthy      Held at midpoint ideal
+  4 / recovery            Starts out-of-range, decays to ideal over ~5 min
+  5 / oscillating         ±10% swing around ideal
+
+Examples:
+  mqtt-scenario-sim --config examples/minimal.yaml
+  mqtt-scenario-sim --config my.yaml --log-level debug
+  `);
+  process.exit(0);
+}
+
 function printMenu(): void {
   logger.info('\n┌─ Scenario control ──────────────────────────────────────────┐');
   for (const label of Object.values(SCENARIO_LABELS)) {
