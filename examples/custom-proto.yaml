@@ -1,0 +1,46 @@
+mqtt:
+  host: localhost
+  port: 1883
+
+publishIntervalMs: 5000
+
+encoding:
+  type: protobuf
+  protoFile: ./my.proto          # path to your .proto file
+  messageType: myapp.SensorReading
+  # fieldMap: remap internal Reading fields to your proto field names (optional)
+  # If your proto field names match the defaults below, fieldMap is not needed.
+  #
+  # Internal fields available for mapping:
+  #   labels.*   — any label key (e.g. labels.room → room)
+  #   metric     — metric name string
+  #   value      — float reading
+  #   units      — units string
+  #   timestamp  — epoch ms
+  #
+  fieldMap:
+    metric: sensor_name
+    value: reading_value
+    units: reading_units
+    timestamp: recorded_at
+
+sources:
+  - labels:
+      building: hq
+      floor: "3"
+      zone: east
+    topic: "{building}/{floor}/{zone}/data"
+    metrics:
+      - name: temperature
+        units: "°C"
+        mode: sinusoidal
+        range: { low: 18, high: 26 }
+      - name: co2
+        units: ppm
+        mode: drift
+        range: { low: 400, high: 1000 }
+    effects:
+      - name: hvac
+        effects:
+          temperature: -0.30
+          co2: -0.25

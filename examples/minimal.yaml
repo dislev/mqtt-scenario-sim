@@ -1,0 +1,19 @@
+mqtt:
+  host: localhost
+  port: 1883
+
+publishIntervalMs: 5000
+
+# encoding defaults to JSON — no configuration needed
+encoding:
+  type: json
+
+sources:
+  - labels:
+      id: sensor-1
+    topic: "{id}/metrics"
+    metrics:
+      - name: temperature
+        units: "°C"
+        mode: sinusoidal
+        range: { low: 18, high: 28 }

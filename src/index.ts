@@ -1,0 +1,10 @@
+export { startSimulator } from './simulator';
+export type { Simulator, StateSnapshot, MetricSnapshot } from './simulator';
+export { buildEncoder, jsonEncoder } from './encoder';
+export type { EncodeFunction, EncodingConfig, Reading } from './encoder';
+export { loadConfig } from './config';
+export type { SimulatorConfig, SourceConfig, MetricConfig } from './config';
+export type { EffectConfig, EffectState } from './effects';
+export type { ScenarioId } from './scenarios';
+export { SCENARIO_KEYS, SCENARIO_LABELS, SCENARIO_DETAIL } from './scenarios';
+export type { SensorMode, SensorRange } from './sensors';

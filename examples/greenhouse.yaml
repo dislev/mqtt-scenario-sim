@@ -1,0 +1,139 @@
+mqtt:
+  host: localhost
+  port: 1883
+
+publishIntervalMs: 5000
+
+encoding:
+  type: json
+
+sources:
+  - labels:
+      org: demo-org
+      device: esp32-sim-1
+      variety: cherry-tomato
+    topic: "{org}/{device}/metrics"
+    metrics:
+      - name: temperature
+        units: "°C"
+        mode: sinusoidal
+        range: { low: 20, high: 30 }
+        periodSeconds: 7200
+      - name: humidity
+        units: "%"
+        mode: sinusoidal
+        range: { low: 60, high: 80 }
+        periodSeconds: 7200
+      - name: co2
+        units: ppm
+        mode: drift
+        range: { low: 400, high: 1200 }
+      - name: light
+        units: lux
+        mode: sinusoidal
+        range: { low: 0, high: 50000 }
+        periodSeconds: 86400
+      - name: nitrogen
+        units: "mg/L"
+        mode: normal
+        range: { low: 150, high: 250 }
+      - name: phosphorus
+        units: "mg/L"
+        mode: normal
+        range: { low: 30, high: 60 }
+      - name: potassium
+        units: "mg/L"
+        mode: normal
+        range: { low: 200, high: 400 }
+      - name: waterLevel
+        units: "%"
+        mode: drift
+        range: { low: 20, high: 95 }
+      - name: flowRate
+        units: "L/min"
+        mode: normal
+        range: { low: 0.5, high: 3.0 }
+    effects:
+      - name: fan
+        effects:
+          temperature: -0.40
+          humidity: -0.30
+          co2: -0.40
+      - name: heater
+        effects:
+          temperature: +0.30
+      - name: solenoid
+        effects:
+          humidity: +0.35
+      - name: lights
+        effects:
+          light: +0.80
+      - name: pump
+        effects:
+          waterLevel: +0.35
+          flowRate: +0.50
+
+  - labels:
+      org: demo-org
+      device: esp32-sim-2
+      variety: butterhead-lettuce
+    topic: "{org}/{device}/metrics"
+    metrics:
+      - name: temperature
+        units: "°C"
+        mode: sinusoidal
+        range: { low: 18, high: 24 }
+        periodSeconds: 7200
+      - name: humidity
+        units: "%"
+        mode: sinusoidal
+        range: { low: 55, high: 75 }
+        periodSeconds: 7200
+      - name: co2
+        units: ppm
+        mode: drift
+        range: { low: 400, high: 1000 }
+      - name: light
+        units: lux
+        mode: sinusoidal
+        range: { low: 0, high: 40000 }
+        periodSeconds: 86400
+      - name: nitrogen
+        units: "mg/L"
+        mode: normal
+        range: { low: 100, high: 200 }
+      - name: phosphorus
+        units: "mg/L"
+        mode: normal
+        range: { low: 20, high: 50 }
+      - name: potassium
+        units: "mg/L"
+        mode: normal
+        range: { low: 150, high: 300 }
+      - name: waterLevel
+        units: "%"
+        mode: drift
+        range: { low: 20, high: 95 }
+      - name: flowRate
+        units: "L/min"
+        mode: normal
+        range: { low: 0.3, high: 2.0 }
+    effects:
+      - name: fan
+        effects:
+          temperature: -0.40
+          humidity: -0.30
+          co2: -0.40
+      - name: heater
+        effects:
+          temperature: +0.30
+      - name: solenoid
+        effects:
+          humidity: +0.35
+      - name: lights
+        effects:
+          light: +0.80
+      - name: pump
+        effects:
+          waterLevel: +0.35
+          flowRate: +0.50
