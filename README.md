@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="mqtt-scenario-sim logo" width="160" />
+</p>
+
 # mqtt-scenario-sim
 
 [![CI](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml/badge.svg)](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml)
