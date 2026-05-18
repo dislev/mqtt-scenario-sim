@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-05-18
+
+### Changed
+- Bumped all dependencies to latest: `typescript` 6, `eslint` 10, `chai` 6, `mocha` beta-10, `@types/node` 25
+- Upgraded GitHub Actions: `actions/checkout` v6, `actions/setup-node` v6, `actions/stale` v10, `codecov/codecov-action` v6
+- Added explicit `types` config in `tsconfig.json` for TypeScript 6 compatibility
+
 ## [1.0.0] - 2026-05-18
 
 ### Added
