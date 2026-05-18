@@ -10,6 +10,8 @@ A configurable MQTT sensor simulator with built-in test scenarios. Publish synth
 
 Define your sources with any labels you want. Wire up any MQTT topic template. Switch between test scenarios over HTTP to drive your alert and pipeline logic.
 
+> **Maintenance:** This project is maintained on a best-effort basis. Bug reports and PRs are welcome — response times may vary.
+
 ---
 
 ## Quick start
