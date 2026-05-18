@@ -139,6 +139,7 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 
 | Method | Path | Description |
 |---|---|---|
+| `GET` | `/status` | Full snapshot: uptime, scenario, all readings, all effects |
 | `GET` | `/health` | Status, uptime, scenario |
 | `GET` | `/scenario` | Current scenario name + description |
 | `POST` | `/scenario/:id` | Activate scenario (0–5 or name). Query: `durationSeconds`, `sourceKey` |

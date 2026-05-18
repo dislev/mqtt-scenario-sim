@@ -118,6 +118,24 @@ async function main(): Promise<void> {
     res.json(sim.getEffectStates());
   });
 
+  app.get('/status', (_req, res) => {
+    const scenarioId = sim.getScenario();
+    const state      = sim.getState() as StateSnapshot;
+    res.json({
+      status:    'ok',
+      uptime:    Math.floor((Date.now() - startTime) / 1000),
+      sources:   config.sources.length,
+      metrics:   totalMetrics,
+      scenario: {
+        id:     scenarioId,
+        label:  SCENARIO_LABELS[scenarioId],
+        detail: SCENARIO_DETAIL[scenarioId],
+      },
+      readings: state.metrics,
+      effects:  sim.getEffectStates(),
+    });
+  });
+
   const server = app.listen(PORT, () => {
     logger.info(`[http] :${PORT}`);
     logger.info(`       GET  /health  GET  /scenario  POST /scenario/:id`);
