@@ -5,7 +5,7 @@
 # mqtt-scenario-sim
 
 [![CI](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml/badge.svg)](https://github.com/dislev/mqtt-scenario-sim/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/badge/npm-v1.0.0-blue)](https://www.npmjs.com/package/mqtt-scenario-sim)
+[![npm version](https://img.shields.io/badge/npm-v1.0.1-blue)](https://www.npmjs.com/package/mqtt-scenario-sim)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node >=22](https://img.shields.io/badge/node-%3E%3D22-green)](package.json)
 [![codecov](https://codecov.io/gh/dislev/mqtt-scenario-sim/branch/main/graph/badge.svg)](https://codecov.io/gh/dislev/mqtt-scenario-sim)
