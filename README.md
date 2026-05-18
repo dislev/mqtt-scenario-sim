@@ -18,6 +18,12 @@ Define your sources with any labels you want. Wire up any MQTT topic template. S
 
 ```bash
 npx mqtt-scenario-sim --config examples/minimal.yaml
+
+# See per-metric publish logs
+npx mqtt-scenario-sim --config examples/minimal.yaml --log-level debug
+
+# Suppress all output except errors
+npx mqtt-scenario-sim --config examples/minimal.yaml --log-level error
 ```
 
 Requires a running MQTT broker (e.g. `docker run -p 1883:1883 eclipse-mosquitto`).
@@ -154,6 +160,7 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 | `PROTO_FIELD_MAP` | — | JSON string field map |
 | `CONFIG_PATH` | `examples/minimal.yaml` | Path to YAML config |
 | `PORT` | `4000` | HTTP control plane port |
+| `LOG_LEVEL` | `info` | `silent` \| `error` \| `warn` \| `info` \| `debug` |
 
 ---
 

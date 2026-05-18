@@ -4,6 +4,7 @@ import { createSensorState, nextValue, advanceBias, SensorState } from './sensor
 import { EncodeFunction } from './encoder';
 import { ScenarioId, SCENARIO_DETAIL, scenarioValue } from './scenarios';
 import { EffectConfig, EffectState, computeBias, parseEffectCommand, applyEffect } from './effects';
+import { logger } from './logger';
 
 export interface MetricSnapshot {
   labels: Record<string, string>;
@@ -69,7 +70,7 @@ export function startSimulator(
     // Subscribe to inbound commands on the reverse topic: topic + "/cmd"
     const cmdTopic = `${topic}/cmd`;
     client.subscribe(cmdTopic, (err) => {
-      if (err) console.error(`[sim] subscribe error ${cmdTopic}:`, err);
+      if (err) logger.error(`[sim] subscribe error ${cmdTopic}:`, err);
     });
   }
 
@@ -86,7 +87,7 @@ export function startSimulator(
         const cmd = parseEffectCommand(raw);
         if (cmd) {
           entry.effectState = applyEffect(entry.effectState, cmd.effect, cmd.state);
-          console.log(`[effect] ${baseTopic} "${cmd.effect}" → ${cmd.state}`);
+          logger.info(`[effect] ${baseTopic} "${cmd.effect}" → ${cmd.state}`);
         }
         return;
       }
@@ -110,7 +111,7 @@ export function startSimulator(
 
   const sourceCount = entries.size;
   const metricCount = [...entries.values()].reduce((n, e) => n + e.states.length, 0);
-  console.log(`[sim] started ${metricCount} metric(s) across ${sourceCount} source(s) | scenario: normal`);
+  logger.info(`[sim] started ${metricCount} metric(s) across ${sourceCount} source(s) | scenario: normal`);
 
   function applyScenario(id: ScenarioId, sourceKey?: string, durationSeconds?: number) {
     const targets = sourceKey ? [sourceKey] : [...entries.keys()];
@@ -126,19 +127,19 @@ export function startSimulator(
       const existing = revertTimers.get(key);
       if (existing) { clearTimeout(existing); revertTimers.delete(key); }
 
-      console.log(`\n[scenario:${entry.topic}] → ${id}`);
-      console.log(`               ${SCENARIO_DETAIL[id]}`);
+      logger.info(`\n[scenario:${entry.topic}] → ${id}`);
+      logger.info(`               ${SCENARIO_DETAIL[id]}`);
 
       if (durationSeconds && durationSeconds > 0) {
-        console.log(`               Auto-reverts in ${durationSeconds}s\n`);
+        logger.info(`               Auto-reverts in ${durationSeconds}s\n`);
         const t = setTimeout(() => {
           revertTimers.delete(key);
           applyScenario('normal', key);
-          console.log(`[scenario:${entry.topic}] auto-reverted to normal\n`);
+          logger.info(`[scenario:${entry.topic}] auto-reverted to normal\n`);
         }, durationSeconds * 1_000);
         revertTimers.set(key, t);
       } else {
-        console.log('');
+        logger.info('');
       }
     }
   }
@@ -147,7 +148,7 @@ export function startSimulator(
     stop() {
       for (const t of timers) clearInterval(t);
       for (const t of revertTimers.values()) clearTimeout(t);
-      console.log('[sim] stopped');
+      logger.info('[sim] stopped');
     },
 
     setScenario(id, sourceKey, durationSeconds) {
@@ -233,8 +234,8 @@ async function publishMetric(
     const biasTag     = state.currentBias !== 0
       ? ` (bias ${state.currentBias > 0 ? '+' : ''}${state.currentBias.toFixed(2)})`
       : '';
-    console.log(`[${metricCfg.name}] ${value.toFixed(2)} ${metricCfg.units} → ${entry.topic}${scenarioTag}${biasTag}`);
+    logger.debug(`[${metricCfg.name}] ${value.toFixed(2)} ${metricCfg.units} → ${entry.topic}${scenarioTag}${biasTag}`);
   } catch (err) {
-    console.error(`[sim] publish error for ${metricCfg.name}:`, err);
+    logger.error(`[sim] publish error for ${metricCfg.name}:`, err);
   }
 }

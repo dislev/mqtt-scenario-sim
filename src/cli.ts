@@ -7,18 +7,24 @@ import { loadConfig } from './config';
 import { buildEncoder, jsonEncoder } from './encoder';
 import { startSimulator, StateSnapshot } from './simulator';
 import { ScenarioId, SCENARIO_KEYS, SCENARIO_LABELS, SCENARIO_DETAIL } from './scenarios';
+import { logger } from './logger';
 
 const PORT = parseInt(process.env['PORT'] ?? '4000', 10);
 
+const logLevelArg = process.argv.find((a) => a.startsWith('--log-level='))?.slice('--log-level='.length)
+  ?? (process.argv.indexOf('--log-level') !== -1 ? process.argv[process.argv.indexOf('--log-level') + 1] : undefined)
+  ?? process.env['LOG_LEVEL'];
+if (logLevelArg) logger.setLevel(logLevelArg);
+
 function printMenu(): void {
-  console.log('\n┌─ Scenario control ──────────────────────────────────────────┐');
+  logger.info('\n┌─ Scenario control ──────────────────────────────────────────┐');
   for (const label of Object.values(SCENARIO_LABELS)) {
-    console.log(`│  ${label.padEnd(61)}│`);
+    logger.info(`│  ${label.padEnd(61)}│`);
   }
-  console.log('│                                                             │');
-  console.log('│  status / ?   show active scenario                         │');
-  console.log('│  help         re-print this menu                           │');
-  console.log('└─────────────────────────────────────────────────────────────┘\n');
+  logger.info('│                                                             │');
+  logger.info('│  status / ?   show active scenario                         │');
+  logger.info('│  help         re-print this menu                           │');
+  logger.info('└─────────────────────────────────────────────────────────────┘\n');
 }
 
 function resolveScenarioId(input: string): ScenarioId | null {
@@ -36,7 +42,7 @@ async function main(): Promise<void> {
   const config = loadConfig(configPath);
 
   const totalMetrics = config.sources.reduce((n, s) => n + s.metrics.length, 0);
-  console.log(
+  logger.info(
     `[init] ${config.sources.length} source(s) | ${totalMetrics} metric(s) | MQTT: ${config.mqtt.host}:${config.mqtt.port}`,
   );
 
@@ -51,7 +57,7 @@ async function main(): Promise<void> {
     client.once('connect', () => resolve());
     client.once('error', (err) => reject(err));
   });
-  console.log(`[mqtt] connected to ${brokerUrl}`);
+  logger.info(`[mqtt] connected to ${brokerUrl}`);
 
   const sim = startSimulator(config, client, encode);
 
@@ -113,16 +119,16 @@ async function main(): Promise<void> {
   });
 
   const server = app.listen(PORT, () => {
-    console.log(`[http] :${PORT}`);
-    console.log(`       GET  /health  GET  /scenario  POST /scenario/:id`);
-    console.log(`       GET  /state   GET  /effects`);
+    logger.info(`[http] :${PORT}`);
+    logger.info(`       GET  /health  GET  /scenario  POST /scenario/:id`);
+    logger.info(`       GET  /state   GET  /effects`);
   });
 
   server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`[http] port ${PORT} in use — HTTP unavailable, sim still running`);
+      logger.warn(`[http] port ${PORT} in use — HTTP unavailable, sim still running`);
     } else {
-      console.error('[http] error:', err);
+      logger.error('[http] error:', err);
     }
   });
 
@@ -137,20 +143,20 @@ async function main(): Promise<void> {
       if (input === 'help')                    { printMenu(); rl.prompt(); return; }
       if (input === 'status' || input === '?') {
         const id = sim.getScenario();
-        console.log(`[scenario] ${id} — ${SCENARIO_DETAIL[id]}`);
+        logger.info(`[scenario] ${id} — ${SCENARIO_DETAIL[id]}`);
         rl.prompt(); return;
       }
       const id = resolveScenarioId(input);
       if (id) sim.setScenario(id);
-      else    console.log(`Unknown: "${input}". Type help for options.`);
+      else    logger.info(`Unknown: "${input}". Type help for options.`);
       rl.prompt();
     });
-    rl.on('close', () => console.log('[repl] stdin closed'));
+    rl.on('close', () => logger.info('[repl] stdin closed'));
   }
 
   // ── Graceful shutdown ──────────────────────────────────────────────────────
   const shutdown = () => {
-    console.log('[shutdown] stopping...');
+    logger.info('[shutdown] stopping...');
     sim.stop();
     client.end();
     server.close(() => process.exit(0));
@@ -160,6 +166,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error('[fatal]', err);
+  logger.error('[fatal]', err);
   process.exit(1);
 });

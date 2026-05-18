@@ -8,3 +8,5 @@ export type { EffectConfig, EffectState } from './effects';
 export type { ScenarioId } from './scenarios';
 export { SCENARIO_KEYS, SCENARIO_LABELS, SCENARIO_DETAIL } from './scenarios';
 export type { SensorMode, SensorRange } from './sensors';
+export { logger } from './logger';
+export type { LogLevel } from './logger';
