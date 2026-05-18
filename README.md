@@ -18,12 +18,6 @@ Define your sources with any labels you want. Wire up any MQTT topic template. S
 
 ```bash
 npx mqtt-scenario-sim --config examples/minimal.yaml
-
-# See per-metric publish logs
-npx mqtt-scenario-sim --config examples/minimal.yaml --log-level debug
-
-# Suppress all output except errors
-npx mqtt-scenario-sim --config examples/minimal.yaml --log-level error
 ```
 
 Requires a running MQTT broker (e.g. `docker run -p 1883:1883 eclipse-mosquitto`).
@@ -139,13 +133,73 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/stream` | SSE stream — one event per metric publish (`curl -N http://localhost:4000/stream`) |
+| `GET` | `/stream` | SSE stream — one event per metric publish |
 | `GET` | `/status` | Full snapshot: uptime, scenario, all readings, all effects |
-| `GET` | `/health` | Status, uptime, scenario |
+| `GET` | `/health` | Status, uptime, source/metric counts, active scenario |
 | `GET` | `/scenario` | Current scenario name + description |
 | `POST` | `/scenario/:id` | Activate scenario (0–5 or name). Query: `durationSeconds`, `sourceKey` |
 | `GET` | `/state` | Last published value per metric |
 | `GET` | `/effects` | Current effect state per source |
+
+### Live tailing with `/stream`
+
+`/stream` is a Server-Sent Events endpoint. It pushes one JSON event per metric publish and stays open until you disconnect.
+
+```bash
+curl -N http://localhost:4000/stream
+```
+
+```
+data: {"labels":{"building":"hq","floor":"3"},"topic":"hq/3/east/metrics","metric":"temperature","units":"°C","value":22.45,"scenario":"normal","timestamp":1747613001234}
+
+data: {"labels":{"building":"hq","floor":"3"},"topic":"hq/3/east/metrics","metric":"humidity","units":"%","value":58.1,"scenario":"normal","timestamp":1747613001235}
+```
+
+Multiple clients can connect simultaneously. The `scenario` field reflects the active scenario at publish time.
+
+### Full snapshot with `/status`
+
+```bash
+curl http://localhost:4000/status
+```
+
+```json
+{
+  "status": "ok",
+  "uptime": 142,
+  "sources": 1,
+  "metrics": 2,
+  "scenario": {
+    "id": "normal",
+    "label": "0 / n  — Normal (uses each metric's configured mode)",
+    "detail": "Each metric runs its configured mode: sinusoidal, drift, normal, or spike."
+  },
+  "readings": [
+    { "labels": { "building": "hq", "floor": "3" }, "metric": "temperature", "units": "°C", "value": 22.45, "lastPublishedAt": 1747613001234 },
+    { "labels": { "building": "hq", "floor": "3" }, "metric": "humidity", "units": "%", "value": 58.1, "lastPublishedAt": 1747613001235 }
+  ],
+  "effects": {
+    "hq/3/east/metrics": { "hvac": false }
+  }
+}
+```
+
+---
+
+## CLI args
+
+| Argument | Description |
+|---|---|
+| `--config <path>` | Path to YAML config file |
+| `--log-level <level>` | `silent` \| `error` \| `warn` \| `info` \| `debug` (default: `info`) |
+
+```bash
+# Verbose — see every metric publish
+npx mqtt-scenario-sim --config my.yaml --log-level debug
+
+# Quiet — errors only
+npx mqtt-scenario-sim --config my.yaml --log-level error
+```
 
 ---
 
@@ -164,6 +218,8 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 | `PORT` | `4000` | HTTP control plane port |
 | `LOG_LEVEL` | `info` | `silent` \| `error` \| `warn` \| `info` \| `debug` |
 
+CLI args take precedence over env vars.
+
 ---
 
 ## Examples
@@ -176,15 +232,21 @@ Internal fields available for mapping: `metric`, `value`, `units`, `timestamp`, 
 
 ## Docker
 
-```dockerfile
-FROM node:22-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY dist/ ./dist/
-COPY examples/ ./examples/
-ENV CONFIG_PATH=examples/minimal.yaml
-CMD ["node", "dist/cli.js"]
+A [`Dockerfile`](Dockerfile) is included. Build and run with your own config:
+
+```bash
+docker build -t mqtt-scenario-sim .
+docker run --rm -e MQTT_HOST=host.docker.internal mqtt-scenario-sim
+```
+
+To use a custom config, mount it at runtime:
+
+```bash
+docker run --rm \
+  -v $(pwd)/my-config.yaml:/app/my-config.yaml \
+  -e CONFIG_PATH=/app/my-config.yaml \
+  -e MQTT_HOST=host.docker.internal \
+  mqtt-scenario-sim
 ```
 
 ---
