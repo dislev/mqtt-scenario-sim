@@ -192,6 +192,7 @@ curl http://localhost:4000/status
 |---|---|
 | `--config <path>` | Path to YAML config file |
 | `--log-level <level>` | `silent` \| `error` \| `warn` \| `info` \| `debug` (default: `info`) |
+| `-h`, `--help` | Print help and exit |
 
 ```bash
 # Verbose — see every metric publish
@@ -199,6 +200,9 @@ npx mqtt-scenario-sim --config my.yaml --log-level debug
 
 # Quiet — errors only
 npx mqtt-scenario-sim --config my.yaml --log-level error
+
+# Help
+npx mqtt-scenario-sim --help
 ```
 
 ---
