@@ -17,6 +17,7 @@
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
     "test": "c8 mocha",
+    "test:ci": "c8 --reporter=lcov --reporter=text mocha",
     "lint": "eslint src test"
   },
   "keywords": [
